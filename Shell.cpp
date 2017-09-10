@@ -3,24 +3,25 @@
 #include <vector>
 #include <ctime>
 #include <iomanip>
+#include <cstdlib>
 
 #include <unistd.h>
 #include <limits.h>
 #include <sys/types.h>
-#include <stdlib.h>
 #include <dirent.h>
 #include <curses.h>
 
 using namespace std;
 
 string getcwd_string(void) {
-    char buff[PATH_MAX];
-    getcwd( buff, PATH_MAX );
-    std::string cwd( buff );
-    return cwd;
+    char buffer[PATH_MAX];
+    getcwd(buffer, PATH_MAX);
+    string dir(buffer);
+    return dir;
 }
 
 int main(void) {
+    pid_t state;
     DIR *d;
     struct dirent *de;
     int i, c, k;
@@ -34,16 +35,9 @@ int main(void) {
         cout << "\nCurrent Directory: " << getcwd_string() << endl;
         d = opendir(".");
         int c = 0, j = 0;
-        /* Use one of the above counting variables and 2 loops for directories
-        and files, adding each to a string vector with the type concat to the
-        front of the string like vector.push("Directory: "+de->d_name);
-        Then use the total number of items in the vector and print x amount
-        at a time if greater than a certain number
-        */
         while (de = readdir(d)) {
             if ((de->d_type) & DT_DIR) {
                 string temp = "( " + to_string(c) + " Directory: " + de->d_name + " )";
-                cout << temp << endl;
                 list.push_back(temp);
                 c++;
             }
@@ -54,14 +48,42 @@ int main(void) {
         while (de = readdir(d)) {
             if((de->d_type) & DT_REG) {
                 string temp = "( " + to_string(c) + " File: " + de->d_name + " )";
-                cout << temp << endl;
                 list.push_back(temp);
                 c++;
             }
         }
+        int lim = 16;
+        c = 0;
+        string nxt;
+        if(list.size() > lim) {
+            while(c < lim) {
+                cout << list[c++] << endl;
+            }
+            cout << "Enter n for Next, or x to return to commands." << endl;
+            while(cin >> nxt) {
+
+                if(nxt == "n") {
+                    system("clear");
+                    lim += 16;
+                    while(c < lim && c < list.size()) {
+                        cout << list[c++] << endl;
+                    }
+                } else {
+                    break;
+                }
+                if(c >= list.size()) {
+                    break;
+                }
+                cout << "Enter n for Next, or x to return to commands." << endl;
+            }
+        } else {
+            while(c < list.size()) {
+                cout << list[c++] << endl;
+            }
+        }
         cout << "-----------------------------------------" << endl;
         cin >> in;
-        if(in == "q") {
+        if(in != "c" && in != "r" && in != "e") {
             flag = true;
             break;
         }
@@ -81,21 +103,28 @@ int main(void) {
             cout << "Run What?: ";
             string cmd;
             cin >> cmd;
-            int state = fork();
+            state = fork();
             if(state == 0) {
                 execl(cmd.c_str(), (char*) 0);
+                exit(1);
             }
+            wait(&state);
         }
         if(in == "e") {
+            string file_dir;
             cout << "Edit What?: ";
             string cmd;
             cin >> cmd;
-            int state = fork();
-            cout << "state: " << state << endl;
+            state = fork();
+            file_dir = "-o "+getcwd_string();
+            /*cout << "state: " << state << "\tfile: "<< file_dir <<endl;*/
             if(state == 0) {
-                execl("pico", cmd.c_str(), (char*) 0);
+                execlp("pico", file_dir.c_str(), cmd.c_str(), (char *) 0);
+                exit(1);
             }
+            wait(&state);
         }
+        list.clear();
     }
     return 0;
 }
