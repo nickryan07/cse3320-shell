@@ -24,6 +24,7 @@ int main(void) {
     DIR *d;
     struct dirent *de;
     int i, c, j, k;
+    vector<string> list;
     string in;
     bool flag = false;
     while(!flag) {
@@ -40,14 +41,31 @@ int main(void) {
         at a time if greater than a certain number
         */
         while (de = readdir(d)) {
-            /*while c*/
-        if ((de->d_type) & DT_DIR)
-            printf( "( %d Directory:  %s )\n", c++, de->d_name);
+            if ((de->d_type) & DT_DIR) {
+                string temp = "( " + to_string(c) + " Directory: " + de->d_name + " )";
+                cout << temp << endl;
+                /*printf( "( %d Directory:  %s )\n", c++, de->d_name);*/
+                list.push_back(temp);
+                c++;
+            }
         }
+        closedir(d);
         cin >> in;
         if(in == "q") {
             flag = true;
             break;
+        }
+        if(in == "c") {
+            string cmd;
+            printf( "Change To?:" );
+            cin >> cmd;
+            if(access(cmd.c_str(), F_OK|R_OK) == 0) {
+                cout << cmd << endl;
+                chdir(cmd.c_str());
+            } else {
+                printf("Directory does not exist.\n");
+                chdir( "." );
+            }
         }
     }
     return 0;
