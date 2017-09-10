@@ -12,11 +12,12 @@
 #include <iomanip>
 #include <cstdlib>
 
+#include <curses.h>
 #include <unistd.h>
 #include <limits.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <dirent.h>
-#include <curses.h>
 
 using namespace std;
 
@@ -134,6 +135,7 @@ int main(void) {
             if(access(cmd.c_str(), F_OK|X_OK) == 0) {
                 state = fork();
                 if(state == 0) {
+                    system("clear");
                     execl(cmd.c_str(), (char*) 0);
                     exit(1);
                 }
