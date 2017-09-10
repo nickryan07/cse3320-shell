@@ -52,38 +52,51 @@ int main(void) {
                 c++;
             }
         }
+        /*TODO : Implement prev feature to go back and forth in the vector
+        display. */
         int lim = 16;
         c = 0;
         string nxt;
         if(list.size() > lim) {
-            while(c < lim) {
+            while(c < lim && c < list.size()) {
                 cout << list[c++] << endl;
             }
             cout << "Enter n for Next, or x to return to commands." << endl;
             while(cin >> nxt) {
-
                 if(nxt == "n") {
                     system("clear");
-                    lim += 16;
+                    lim = lim+16;
                     while(c < lim && c < list.size()) {
                         cout << list[c++] << endl;
                     }
-                } else {
+                } if(nxt == "p" && (c-16) >= 0) {
+                    system("clear");
+                    lim = lim-16;
+                    c = c-32;
+                    cout << c << "\t" << lim << endl;
+                    while(c < lim && c < list.size()) {
+                        cout << list[c++] << endl;
+                    }
+                } else if(nxt == "x") {
                     break;
                 }
                 if(c >= list.size()) {
                     break;
                 }
-                cout << "Enter n for Next, or x to return to commands." << endl;
+                cout << "Enter n for Next, p for prev, or x to return to commands." << endl;
             }
         } else {
             while(c < list.size()) {
                 cout << list[c++] << endl;
             }
         }
-        cout << "-----------------------------------------" << endl;
+        cout << "--------------------------------------------" << endl;
+        cout << "[c to change directory, r to run, e to edit]" << endl;
         cin >> in;
-        if(in != "c" && in != "r" && in != "e") {
+        if(in != "c" && in != "r" && in != "e" && in != "s" && in != "q") {
+            cout << "Invalid command." << endl;
+        }
+        if(in == "q") {
             flag = true;
             break;
         }
@@ -123,6 +136,9 @@ int main(void) {
                 exit(1);
             }
             wait(&state);
+        }
+        if(in == "s") {
+            cout << "Press d to sort by date, z to sort by size" << endl;
         }
         list.clear();
     }
