@@ -1,3 +1,10 @@
+/**
+* Name: Nicholas Reimherr
+* ID: 1001179884
+* Language: C++
+* Assignment 1: Simple Shell
+*/
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -13,6 +20,10 @@
 
 using namespace std;
 
+/**
+* Function to return the current working directory as a string
+* Note: Uses PATH_MAX in order to avoid using an arbitrary fixed length buffer.
+*/
 string getcwd_string(void) {
     char buffer[PATH_MAX];
     getcwd(buffer, PATH_MAX);
@@ -21,10 +32,12 @@ string getcwd_string(void) {
 }
 
 int main(void) {
+    /* used when forking the process to edit a file or run a program */
     pid_t state;
     DIR *d;
     struct dirent *de;
     int i, c, k;
+    /* Vector to store each item found in a directory for easy navigation */
     vector<string> list;
     string in;
     bool flag = false;
@@ -52,8 +65,8 @@ int main(void) {
                 c++;
             }
         }
-        /*TODO : Implement prev feature to go back and forth in the vector
-        display. */
+        /* Variables to keep track of the current items printed to the screen
+         eg 0-16, 16-32, etc. Added the ability to go back and forth.*/
         int lim = 16;
         c = 0;
         string nxt;
@@ -116,26 +129,38 @@ int main(void) {
             cout << "Run What?: ";
             string cmd;
             cin >> cmd;
-            state = fork();
-            if(state == 0) {
-                execl(cmd.c_str(), (char*) 0);
-                exit(1);
+            /* This will check if the file exists and it can be executed to avoid
+            any system call errors. */
+            if(access(cmd.c_str(), F_OK|X_OK) == 0) {
+                state = fork();
+                if(state == 0) {
+                    execl(cmd.c_str(), (char*) 0);
+                    exit(1);
+                }
+                wait(&state);
+            } else {
+                cout << "\nEither the file doesn't exist or it is not executable\n" << endl;
             }
-            wait(&state);
         }
         if(in == "e") {
             string file_dir;
             cout << "Edit What?: ";
             string cmd;
             cin >> cmd;
-            state = fork();
-            file_dir = "-o "+getcwd_string();
-            /*cout << "state: " << state << "\tfile: "<< file_dir <<endl;*/
-            if(state == 0) {
-                execlp("pico", file_dir.c_str(), cmd.c_str(), (char *) 0);
-                exit(1);
+            /* Check to ensure the file exists and the user has read and
+            write access */
+            if(access(cmd.c_str(), F_OK|R_OK|W_OK) == 0) {
+                state = fork();
+                file_dir = "-o "+getcwd_string();
+                /*cout << "state: " << state << "\tfile: "<< file_dir <<endl;*/
+                if(state == 0) {
+                    /* need the -o command to specify working directory so that
+                    an existing file will be opened rather than a new buffer */
+                    execlp("pico", file_dir.c_str(), cmd.c_str(), (char *) 0);
+                    exit(1);
+                }
+                wait(&state);
             }
-            wait(&state);
         }
         if(in == "s") {
             cout << "Press d to sort by date, z to sort by size" << endl;
