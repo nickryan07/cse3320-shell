@@ -23,7 +23,7 @@ string getcwd_string(void) {
 int main(void) {
     DIR *d;
     struct dirent *de;
-    int i, c, j, k;
+    int i, c, k;
     vector<string> list;
     string in;
     bool flag = false;
@@ -44,12 +44,22 @@ int main(void) {
             if ((de->d_type) & DT_DIR) {
                 string temp = "( " + to_string(c) + " Directory: " + de->d_name + " )";
                 cout << temp << endl;
-                /*printf( "( %d Directory:  %s )\n", c++, de->d_name);*/
                 list.push_back(temp);
                 c++;
             }
         }
         closedir(d);
+        d = opendir(".");
+        c = 0;
+        while (de = readdir(d)) {
+            if((de->d_type) & DT_REG) {
+                string temp = "( " + to_string(c) + " File: " + de->d_name + " )";
+                cout << temp << endl;
+                list.push_back(temp);
+                c++;
+            }
+        }
+        cout << "-----------------------------------------" << endl;
         cin >> in;
         if(in == "q") {
             flag = true;
@@ -57,14 +67,33 @@ int main(void) {
         }
         if(in == "c") {
             string cmd;
-            printf( "Change To?:" );
+            cout << "Change To?: ";
             cin >> cmd;
             if(access(cmd.c_str(), F_OK|R_OK) == 0) {
                 cout << cmd << endl;
                 chdir(cmd.c_str());
             } else {
-                printf("Directory does not exist.\n");
+                cout << "Directory does not exist." << endl;
                 chdir( "." );
+            }
+        }
+        if(in == "r") {
+            cout << "Run What?: ";
+            string cmd;
+            cin >> cmd;
+            int state = fork();
+            if(state == 0) {
+                execl(cmd.c_str(), (char*) 0);
+            }
+        }
+        if(in == "e") {
+            cout << "Edit What?: ";
+            string cmd;
+            cin >> cmd;
+            int state = fork();
+            cout << "state: " << state << endl;
+            if(state == 0) {
+                execl("pico", cmd.c_str(), (char*) 0);
             }
         }
     }
